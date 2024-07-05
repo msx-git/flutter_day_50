@@ -5,20 +5,19 @@ class Foydalanuvchi {
   final String name;
   final String email;
   final String userId;
+  final String? pushToken;
 
   const Foydalanuvchi({
     required this.id,
     required this.name,
     required this.email,
     required this.userId,
+    required this.pushToken,
   });
-
-
-
 
   @override
   String toString() {
-    return 'Foydalanuvchi{id: $id, name: $name, email: $email, userId: $userId}';
+    return 'Foydalanuvchi{id: $id, name: $name, email: $email, userId: $userId, pushToken: $pushToken}';
   }
 
   Map<String, dynamic> toJson() {
@@ -27,6 +26,7 @@ class Foydalanuvchi {
       'name': name,
       'email': email,
       'userId': userId,
+      'pushToken': pushToken,
     };
   }
 
@@ -36,6 +36,7 @@ class Foydalanuvchi {
       name: json['name'] as String,
       email: json['email'] as String,
       userId: json['userId'] as String,
+      pushToken: json['pushToken'] ?? "",
     );
   }
 
@@ -45,7 +46,7 @@ class Foydalanuvchi {
       name: query['name'] as String,
       email: query['email'] as String,
       userId: query['userId'] as String,
+      pushToken: query['pushToken'] ?? "",
     );
   }
-
 }

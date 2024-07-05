@@ -1,18 +1,19 @@
-import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:firebase_auth/firebase_auth.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_day_50/controllers/messages_controller.dart';
 import 'package:flutter_day_50/models/user.dart';
+import 'package:flutter_day_50/services/push_notification_firebase_service.dart';
 import 'package:provider/provider.dart';
 
 import '../../../models/message.dart';
 
 class ChatScreen extends StatefulWidget {
-  const ChatScreen(
-      {super.key, required this.selectedUser, required this.users});
+  const ChatScreen({
+    super.key,
+    required this.selectedUser,
+  });
 
   final Foydalanuvchi selectedUser;
-  final List<QueryDocumentSnapshot> users;
 
   @override
   State<ChatScreen> createState() => _ChatScreenState();
@@ -26,6 +27,8 @@ class _ChatScreenState extends State<ChatScreen> {
     textController.dispose();
     super.dispose();
   }
+
+  final currentUser = FirebaseAuth.instance.currentUser;
 
   @override
   Widget build(BuildContext context) {
@@ -54,33 +57,34 @@ class _ChatScreenState extends State<ChatScreen> {
             );
           }
 
-          final messages = snapshot.data!.docs;
+          var messages = snapshot.data!.docs;
+          messages.sort((a, b) => a.get('date').compareTo(b.get('date')));
+          messages = messages.reversed.toList();
 
           return Column(
             children: [
               Expanded(
                 child: ListView.builder(
+                  reverse: true,
                   padding:
                       const EdgeInsets.symmetric(horizontal: 20, vertical: 10),
                   itemCount: messages.length,
                   itemBuilder: (context, index) {
                     final message = Message.fromQuery(messages[index]);
-                    final receiver = widget.users
-                        .map((e) => Foydalanuvchi.fromQuery(e))
-                        .toList()
-                        .firstWhere(
-                            (user) => user.userId == message.receiverId);
 
-                    final sender = widget.users
-                        .map((e) => Foydalanuvchi.fromQuery(e))
-                        .toList()
-                        .firstWhere(
-                            (user) => user.userId == message.senderId);
-
-                    return FirebaseAuth.instance.currentUser!.uid ==
-                                    sender.userId && message.receiverId ==
-                        receiver.userId && widget.selectedUser.userId == message.receiverId
-                        ? Text("To: ${receiver.email} From ${sender.email}\n${message.text}\n")
+                    return (currentUser!.uid == message.senderId &&
+                                widget.selectedUser.userId ==
+                                    message.receiverId) ||
+                            currentUser!.uid == message.receiverId &&
+                                widget.selectedUser.userId == message.senderId
+                        ? Align(
+                            alignment: currentUser!.uid == message.senderId &&
+                                    widget.selectedUser.userId ==
+                                        message.receiverId
+                                ? Alignment.centerRight
+                                : Alignment.centerLeft,
+                            child: Text("${message.text}\n"),
+                          )
                         : const Visibility(
                             visible: false, child: Text("No chat history"));
                   },
@@ -104,7 +108,17 @@ class _ChatScreenState extends State<ChatScreen> {
                               senderId: FirebaseAuth.instance.currentUser!.uid,
                               text: textController.text.trim(),
                             )
-                            .then((value) => textController.clear());
+                            .then(
+                          (_) {
+                            textController.clear();
+                            PushNotificationFirebaseService
+                                .sendNotificationMessage(
+                              pushToken: widget.selectedUser.pushToken!,
+                              title: FirebaseAuth.instance.currentUser!.email!,
+                              body: textController.text,
+                            );
+                          },
+                        );
                       },
                       icon: const Icon(Icons.send),
                     ),

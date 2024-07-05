@@ -1,11 +1,12 @@
 import 'package:firebase_auth/firebase_auth.dart';
 import 'package:flutter/cupertino.dart';
 import 'package:flutter/material.dart';
-import 'package:flutter_day_50/controllers/auth_controller.dart';
-import 'package:flutter_day_50/controllers/users_controller.dart';
-import 'package:flutter_day_50/models/user.dart';
-import 'package:flutter_day_50/views/screens/chat/chat_screen.dart';
 import 'package:provider/provider.dart';
+
+import '../../../controllers/auth_controller.dart';
+import '../../../controllers/users_controller.dart';
+import '../../../models/user.dart';
+import '../chat/chat_screen.dart';
 
 class HomeScreen extends StatelessWidget {
   const HomeScreen({super.key});
@@ -52,28 +53,51 @@ class HomeScreen extends StatelessWidget {
             itemCount: users.length,
             itemBuilder: (context, index) {
               final user = Foydalanuvchi.fromQuery(users[index]);
-              print(
-                  "user id: ${user.userId}");
+              print("user id: ${user.userId}");
               print(
                   "Current user id: ${FirebaseAuth.instance.currentUser!.uid}");
               return FirebaseAuth.instance.currentUser!.email == user.email
                   ? ListTile(
-                      leading: Text("${index + 1}"),
+                      leading: Container(
+                        width: 50,
+                        height: 50,
+                        alignment: Alignment.center,
+                        decoration: const BoxDecoration(
+                            shape: BoxShape.circle, color: Color(0xff404040)),
+                        child: const Text(
+                          "S",
+                          style: TextStyle(color: Colors.white, fontSize: 16),
+                        ),
+                      ),
                       title: const Text("Saved messages"),
-                      subtitle: Text("${user.name}: ${user.email}"),
-                      onTap: () {},
+                      onTap: () => Navigator.push(
+                        context,
+                        CupertinoPageRoute(
+                          builder: (context) => ChatScreen(selectedUser: user),
+                        ),
+                      ),
                     )
                   : ListTile(
-                      leading: Text("${index + 1}"),
+                      leading: Container(
+                        width: 50,
+                        height: 50,
+                        alignment: Alignment.center,
+                        decoration: const BoxDecoration(
+                            shape: BoxShape.circle, color: Color(0xff303030)),
+                        child: Text(
+                          user.name[0],
+                          style: const TextStyle(
+                            color: Colors.white,
+                            fontSize: 16,
+                          ),
+                        ),
+                      ),
                       title: Text(user.name),
                       subtitle: Text(user.email),
                       onTap: () => Navigator.push(
                         context,
                         CupertinoPageRoute(
-                          builder: (context) => ChatScreen(
-                            selectedUser: user,
-                            users: users,
-                          ),
+                          builder: (context) => ChatScreen(selectedUser: user),
                         ),
                       ),
                     );

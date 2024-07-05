@@ -10,6 +10,7 @@ class AuthController with ChangeNotifier {
     required String password,
   }) async {
     await _firebaseAuthService.register(email: email, password: password);
+    notifyListeners();
   }
 
   Future<void> login({
@@ -17,6 +18,7 @@ class AuthController with ChangeNotifier {
     required String password,
   }) async {
     await _firebaseAuthService.login(email: email, password: password);
+    notifyListeners();
   }
 
   Future<void> signOut() async {

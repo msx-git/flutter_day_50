@@ -1,4 +1,5 @@
 import 'package:cloud_firestore/cloud_firestore.dart';
+import 'package:firebase_messaging/firebase_messaging.dart';
 import 'package:flutter/foundation.dart';
 
 class UsersFirebaseService {
@@ -13,11 +14,13 @@ class UsersFirebaseService {
     required String email,
     required String userId,
   }) async {
+    final pushToken = await FirebaseMessaging.instance.getToken();
     try {
       await _usersCollection.add({
         'name': name,
         'email': email,
-        'userId':userId,
+        'userId': userId,
+        'pushToken': pushToken,
       });
     } on FirebaseException catch (e) {
       debugPrint("Firestore error: $e");
